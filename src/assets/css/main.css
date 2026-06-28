@@ -1,0 +1,20 @@
+@import './variables.css';
+@import './typography.css';
+@import './transitions.css';
+
+/* ── Global resets ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+}
