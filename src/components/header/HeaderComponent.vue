@@ -2,7 +2,6 @@
 import Fullscreen from "./Fullscreen.vue";
 import HeaderAvatar from "./HeaderAvatar.vue";
 import SwitchThemes from "./SwitchThemes.vue";
-import Refresh from "./Refresh.vue";
 
 import type { PropType } from "vue"
 import type { UserInfo } from "@/api/v1"
@@ -37,7 +36,6 @@ const defaultUserInfo: UserInfo = {
       <div class="actions-wrapper">
         <SwitchThemes />
         <Fullscreen />
-        <Refresh />
         <HeaderAvatar @logout="authStore.revokeToken" size="medium" :info="props.userInfo || defaultUserInfo" />
       </div>
     </div>

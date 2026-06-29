@@ -3,44 +3,7 @@ import * as apiv1 from "@/api/v1";
 import { type Resp } from "@/api/response";
 
 import { ref, watch, computed } from "vue";
-
-export interface ArticleView extends apiv1.Article {
-  $state: {
-    checked: boolean,
-    loadings: {
-      delete: boolean,
-      updates: {
-        status: boolean,
-        title: boolean,
-        description: boolean,
-        customID: boolean,
-        category: boolean,
-        coverImage: boolean,
-        tags: boolean,
-        enableComment: boolean,
-        restore: boolean,
-      },
-    }
-  }
-}
-
-const defaultState: ArticleView["$state"] = {
-  checked: false,
-  loadings: {
-    delete: false,
-    updates: {
-      status: false,
-      title: false,
-      description: false,
-      customID: false,
-      category: false,
-      coverImage: false,
-      tags: false,
-      enableComment: false,
-      restore: false,
-    },
-  },
-}
+import { toArticleViews, type ArticleView } from "./use_article_card_state";
 
 export type ArticleViewsFn<T> = (query:apiv1.ArticleGeneralQuery) => Resp<T>
 export type ArticleViewsAdapter<T> = (data: T) => apiv1.Article[]
@@ -58,10 +21,7 @@ function useViewerBase<T>(fn: ArticleViewsFn<T>, adapter: ArticleViewsAdapter<T>
   }, adapter);
 
   watch(() => ar.articles.value, (newData) => {
-    articles.value = newData.map(v => ({ 
-      ...v, 
-      $state: JSON.parse(JSON.stringify(defaultState)) 
-    }))
+    articles.value = toArticleViews(newData)
   }, { immediate: true, deep: true })
 
   const setExpr = (newExpr: string | undefined) => {
@@ -104,7 +64,6 @@ function useViewerBase<T>(fn: ArticleViewsFn<T>, adapter: ArticleViewsAdapter<T>
       ids.forEach(id => {
         const article = getArticle(id)
         if (article) {
-          console.log(article, val)
           article.$state.loadings.delete = val
         }
       })
@@ -125,14 +84,14 @@ function useViewerBase<T>(fn: ArticleViewsFn<T>, adapter: ArticleViewsAdapter<T>
 
     const mark = (val: boolean) => {
       for (const key in options) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      article.$state.loadings.updates[key] = val
-    }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        article.$state.loadings.updates[key] = val
+      }
     }
 
     mark(true)
-    
+
     const resp = await ar.update(id, options).finally(() => {
       mark(false)
     })

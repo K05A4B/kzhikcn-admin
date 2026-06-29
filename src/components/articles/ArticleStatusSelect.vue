@@ -2,6 +2,7 @@
 import { NSelect, NIcon, type SelectOption } from 'naive-ui';
 import { h, type VNodeChild, type VNode } from 'vue'
 import { Editor, Eyes, PreviewCloseOne } from "@icon-park/vue-next"
+import type { ArticleStatus } from '@/api/v1'
 
 const options = [
   { label: "草稿", value: "draft" },
@@ -41,7 +42,7 @@ const renderOption = (option: SelectOption): VNodeChild =>  {
 }
 
 const emit = defineEmits<{
-  (e: "update", status: string): void,
+  (e: "update", status: ArticleStatus): void,
 }>()
 </script>
 

@@ -18,11 +18,6 @@ const router = createRouter({
     },
 
     {
-      path: "/article-editor/new",
-      meta: { hidden: true, title: "新建文章", tabIcon: Agreement },
-      component: () => import("@/views/articles/CreateArticle.vue"),
-    },
-    {
       path: "/article-editor/:articleId",
       meta: { hidden: true, title: "文章编辑", tabIcon: Agreement },
       component: () => import("@/views/articles/ArticleEditor.vue"),

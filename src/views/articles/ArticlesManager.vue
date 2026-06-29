@@ -22,7 +22,11 @@ const onCreateBtnClick = () => {
 }
 
 const onCreateArticle = async (data: CreateArticleBody) => {
-  await view.create(data)
+  const created = await view.create(data)
+  if (created) {
+    showCreateDrawer.value = false
+    tab.openTab(`/article-editor/${created.id}`)
+  }
 }
 </script>
 

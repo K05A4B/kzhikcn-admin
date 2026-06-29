@@ -4,7 +4,7 @@ import { apiv1 } from '@/api'
 import { useFetch } from '@/composable'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { Book, CategoryManagement, TagOne, PreviewOpen, Plus, Setting, Agreement,
+import { Book, CategoryManagement, TagOne, PreviewOpen, BookOpen, Setting, Agreement,
   Time, ArrowRight, Edit } from '@icon-park/vue-next'
 import {
   NCard, NSpin, NEmpty, NButton, NText, NTag
@@ -106,7 +106,7 @@ reload()
 
 // ── 快捷操作 ──
 const quickActions = [
-  { label: '新建文章', icon: Plus, color: '#1273eb', bg: 'rgba(18,115,235,0.08)', action: () => router.push('/article-editor/new') },
+  { label: '文章管理', icon: BookOpen, color: '#1273eb', bg: 'rgba(18,115,235,0.08)', action: () => router.push('/content/articles') },
   { label: '管理分类', icon: CategoryManagement, color: '#10b981', bg: 'rgba(16,185,129,0.08)', action: () => router.push('/content/articles/categories') },
   { label: '管理标签', icon: TagOne, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', action: () => router.push('/content/articles/tags') },
   { label: '系统设置', icon: Setting, color: '#6366f1', bg: 'rgba(99,102,241,0.08)', action: () => router.push('/settings/general') },
@@ -211,7 +211,7 @@ const statCards = computed(() => [
           <div v-if="recentArticles.length === 0" class="empty-state">
             <NEmpty description="还没有文章">
               <template #extra>
-                <NButton size="small" @click="router.push('/article-editor/new')">
+                <NButton size="small" @click="router.push('/content/articles')">
                   写第一篇文章
                 </NButton>
               </template>

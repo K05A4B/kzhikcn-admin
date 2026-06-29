@@ -41,11 +41,22 @@ export function useArticleEditor(articleId: string) {
     if (raw !== undefined && raw !== null) {
       content.value = String(raw)
       initialContent.value = String(raw)
+    } else if (contentError.value?.code === 404) {
+      // 文章还没有正文内容，这不是错误
+      content.value = ''
+      initialContent.value = ''
     }
   }
 
+  // 过滤 404（无正文）的"错误"——编辑器应正常打开
+  const loadError = computed(() => {
+    if (!contentError.value) return null
+    if (contentError.value.code === 404) return null
+    return contentError.value
+  })
+
   // ── 保存 ──
-  async function save(status?: 'draft' | 'published') {
+  async function save(status?: 'draft' | 'published', silent = false) {
     saving.value = true
     try {
       const meta: EditableArticle = { title: title.value }
@@ -68,7 +79,7 @@ export function useArticleEditor(articleId: string) {
         await doSaveContent()
       }
 
-      message.success('已保存')
+      if (!silent) message.success('已保存')
       isDirty.value = false
       initialContent.value = content.value
     } finally {
@@ -85,7 +96,7 @@ export function useArticleEditor(articleId: string) {
   return {
     article, title, content, isDirty,
     loading, saving,
-    loadError: contentError,
+    loadError,
     load, save, markDirty,
   }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, useAttrs, useTemplateRef, nextTick } from "vue"
-import { NInput, NEllipsis } from "naive-ui"
+import { NInput, NEllipsis, NSpin, NFlex } from "naive-ui"
 
 const props = defineProps({
   value: {
@@ -32,7 +32,7 @@ const isEdit = ref(false)
 const value = ref(props.value)
 
 const onCellClick = () => {
-  if (props.disabled) {
+  if (props.disabled || props.loading) {
     return
   }
   value.value = props.value
@@ -50,9 +50,13 @@ const onBlur = () => {
 
 <template>
   <div class="cell" @click="onCellClick">
-    <NInput ref="inputRef" v-bind="attr" v-if="isEdit" @blur="onBlur" v-model:value="value" />
-    <NEllipsis style="width: 100%;" v-else>
-      {{ props.value || emptyText }}
-    </NEllipsis>
+    <NInput v-if="isEdit" ref="inputRef" v-bind="attr" @blur="onBlur" v-model:value="value" />
+    <NFlex v-else>
+      <NSpin :show="loading" :size="16" >
+        <NEllipsis style="width: 100%;">
+          {{ props.value || emptyText }}
+        </NEllipsis>
+      </NSpin>
+    </NFlex>
   </div>
 </template>

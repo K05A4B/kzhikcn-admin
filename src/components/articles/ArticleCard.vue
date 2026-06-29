@@ -2,7 +2,7 @@
 import { NCard, NCheckbox, NEllipsis, NFlex, NTabs, NSwitch, NTabPane, NButtonGroup, NTable, NTag, NButton, NPopconfirm, NDynamicTags, NDivider } from 'naive-ui';
 import EditableCell from '@/components/common/EditableCell.vue';
 import { Like, Eyes, MemoryCardOne, DeleteFive } from "@icon-park/vue-next"
-import { type ArticleView } from '@/composable/use_articles_view'
+import { type ArticleView } from '@/composable/use_article_card_state'
 import CategorySelect from '@/components/articles/CategorySelect.vue'
 import { watch, type PropType, ref, computed } from 'vue'
 import * as apiv1 from '@/api/v1'
@@ -193,11 +193,12 @@ const formatDate = (date: string) => {
           </NTag>
 
           <ArticleStatusSelect
-            :loading="loadings.updates.status" 
-            size="small" 
+            :loading="loadings.updates.status"
+            size="small"
             style="min-width: 110px;"
-            :disabled="disabled || loadings.updates.status" 
+            :disabled="disabled || loadings.updates.status"
             :value="info.status"
+            @update="status => update({ status })"
           />
 
         </NFlex>
