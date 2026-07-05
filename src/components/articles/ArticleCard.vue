@@ -8,7 +8,7 @@ import { watch, type PropType, ref, computed } from 'vue'
 import * as apiv1 from '@/api/v1'
 import ArticleStatusSelect from './ArticleStatusSelect.vue';
 
-type ShowElements = ("checkbox"|"actionButtons")[];
+type ShowElements = ("checkbox"|"actionButtons"|"delete")[];
 
 const props = defineProps({
   info: {
@@ -17,7 +17,7 @@ const props = defineProps({
   },
   show: {
     type: Array as PropType<ShowElements>,
-    default: () => ["checkbox", "actionButtons"],
+    default: () => ["checkbox", "actionButtons", "delete"],
   },
   disabled: {
     type: Boolean,
@@ -30,6 +30,7 @@ const emit = defineEmits<{
   (e: "check", id: string, checked: boolean): void,
   (e: "delete", id: string): void,
   (e: "update", id: string, options: apiv1.EditableArticle): void,
+  (e: "open-asset-manager", id: string): void,
 }>()
 
 const tags = ref<string[]>([])
@@ -177,7 +178,8 @@ const formatDate = (date: string) => {
             </td>
           </tr>
         </NTable>
-        <NButton style="margin-top: 8px;" type="primary" secondary block size="small">打开文章资源管理器</NButton>
+
+        <NButton style="margin-top: 8px;" type="primary" :disabled="disabled" secondary block size="small" @click="emit('open-asset-manager', props.info.id)">打开文章资源管理器</NButton>
       </NTabPane>
     </NTabs>
 
@@ -216,6 +218,7 @@ const formatDate = (date: string) => {
             <slot name="action-buttons" />
 
             <NPopconfirm animated positive-text="确认" @positive-click="emit('delete', info.id)"
+              v-if="show.includes('delete')"
               negative-text="取消">
               <template #trigger>
                 <NButton title="删除文章" :loading="loadings.delete" :disabled="loadings.delete" secondary size="small" align="center"

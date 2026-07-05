@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import ArticleCard from '@/components/articles/ArticleCard.vue';
+import ArticleAssetManager from '@/components/articles/ArticleAssetManager.vue';
 import { NCard, NEmpty, NGrid, NFlex, NGi, NSpin, NPagination, NButton, NAlert, NTag, NDrawer, NDrawerContent } from 'naive-ui';
 import { Add, Edit } from '@icon-park/vue-next';
 import { useArticlesViewer } from '@/composable/use_articles_view';
@@ -27,6 +28,15 @@ const onCreateArticle = async (data: CreateArticleBody) => {
     showCreateDrawer.value = false
     tab.openTab(`/article-editor/${created.id}`)
   }
+}
+
+const assetsManagerDrawer = reactive({
+  show: false,
+  id: null as string | null
+})
+const onOpenAssetManager = (id: string) => {
+  assetsManagerDrawer.show = true
+  assetsManagerDrawer.id = id
 }
 </script>
 
@@ -79,6 +89,7 @@ const onCreateArticle = async (data: CreateArticleBody) => {
               @check="view.setCheck"
               @update="view.update"
               @delete="view.delete"
+              @open-asset-manager="onOpenAssetManager"
               :info="article" >
               <template #action-buttons>
                 <NButton secondary size="small" @click="onEdit(article.id)"
@@ -101,5 +112,7 @@ const onCreateArticle = async (data: CreateArticleBody) => {
         />
       </NFlex>
     </NSpin>
+
+    <ArticleAssetManager v-model:show="assetsManagerDrawer.show" :article-id="assetsManagerDrawer.id!" />
   </NCard>
 </template>

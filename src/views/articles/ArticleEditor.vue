@@ -3,8 +3,10 @@ import { computed, ref, watch, onMounted, onUnmounted, useTemplateRef } from 'vu
 import { useRoute } from 'vue-router'
 import { useArticleEditor } from '@/composable'
 import { usePanelStore } from '@/stores/panel'
+import { useAuthStore } from '@/stores/auth'
 import { useFetch, useMessage } from '@/composable'
 import ArticleCard from '@/components/articles/ArticleCard.vue'
+import ArticleAssetManager from '@/components/articles/ArticleAssetManager.vue'
 import type { ArticleView } from '@/composable/use_article_card_state'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -18,6 +20,7 @@ const panelStore = usePanelStore()
 const message = useMessage()
 
 const articleId = route.params.articleId as string
+const showAssetDrawer = ref(false)
 const { article, title, content, loading, saving, load, save, markDirty, loadError, isDirty } = useArticleEditor(articleId)
 
 // ── 自动保存 (60s 间隔) ──
@@ -145,6 +148,30 @@ function handleCardUpdate(_id: string, options: EditableArticle) {
 }
 
 const editorTheme = computed(() => panelStore.themeMode === 'dark' ? 'dark' : 'light')
+const authStore = useAuthStore()
+
+// ── 插入图片 ──
+async function handleUploadImg(files: File[], callback: (urls: string[]) => void) {
+  try {
+    const urls: string[] = []
+    for (const file of files) {
+      const { fetch: doUpload, data: uploadData } = useFetch(
+        () => apiv1.uploadArticleAsset(articleId, file),
+        { showError: false },
+      )
+      await doUpload()
+      const filename = uploadData.value
+      if (filename) {
+        const baseUrl = authStore.baseUrl ?? window.location.origin
+        urls.push(`${baseUrl.replace(/\/+$/, '')}/v1/articles/${articleId}/assets/${filename}`)
+      }
+    }
+    callback(urls)
+    message.success('图片上传成功')
+  } catch {
+    message.error('图片上传失败')
+  }
+}
 
 // ── 全屏 ──
 const editorPageRef = useTemplateRef<HTMLElement>('editorPageRef')
@@ -256,6 +283,7 @@ onUnmounted(() => {
             language="zh-CN"
             style="height: 100%"
             @on-change="markDirty"
+            @on-upload-img="handleUploadImg"
           />
         </div>
 
@@ -265,16 +293,26 @@ onUnmounted(() => {
             <ArticleCard
               v-if="articleView"
               :info="articleView"
-              :show="[]"
+              :show="['actionButtons']"
               :disabled="false"
               :bordered="false"
               @update="handleCardUpdate"
-            />
+            >
+              <template #action-buttons>
+                <NButton style="margin-top: 8px;" type="primary" secondary block size="small" @click="showAssetDrawer = true">打开文章资源管理器</NButton>
+              </template>
+            </ArticleCard>
           </NCollapseItem>
         </NCollapse>
       </div>
     </div>
   </div>
+
+  <!-- 资源管理器抽屉 -->
+  <ArticleAssetManager
+    v-model:show="showAssetDrawer"
+    :article-id="articleId"
+  />
 </template>
 
 <style scoped>
