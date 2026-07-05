@@ -104,7 +104,7 @@ NLayout (has-sider)
 
 ### 开发规范
 
-1. 所有API调用都必须使用 `useFetch`, `useAction` 函数，不能直接调用 `httpClient`。
+1. 所有API调用都必须使用 `useFetch`(需要获取数据), `useAction`(不需要获取数据) 函数，不能直接调用 `httpClient`。
 2. 能复用的代码都必须提取到 `composables/` 目录下，避免重复编写。
 3. 实现功能前先看看能不能使用composable的代码
 4. 不要重复造轮子，除非功能非常简单引入第三方库可能带来额外的负面影响

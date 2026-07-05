@@ -89,7 +89,7 @@ const cardSubtitle = computed(() => step.value === 'mfa'
 
     <div class="login-container">
       <div class="login-brand">
-        <img src="/logo.svg" alt="Logo" class="login-logo" />
+        <!-- <img src="/logo.svg" alt="Logo" class="login-logo" /> -->
         <span class="login-brand-text">管理面板</span>
       </div>
 
@@ -197,8 +197,6 @@ const cardSubtitle = computed(() => step.value === 'mfa'
           </div>
         </NSpin>
       </NCard>
-
-      <p class="login-footer">kzhikcn 内容管理系统</p>
     </div>
   </div>
 </template>
