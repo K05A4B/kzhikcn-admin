@@ -6,16 +6,21 @@ import { useFetch, usePagination } from '@/composable'
 import { useMessage } from '@/composable/use_naiveui_discrete_api'
 import EditableCell from '@/components/common/EditableCell.vue'
 import {
-  NCard, NButton, NInput, NPopconfirm, NPagination, NDataTable, NModal, NForm, NFormItem, NSpace
+  NCard, NButton, NInput, NPopconfirm, NPagination, NDataTable, NModal, NForm, NFormItem, NFlex, NEmpty, NInputGroup, NCheckbox
 } from 'naive-ui'
-import type { DataTableColumn } from 'naive-ui'
-import { Plus, Delete } from '@icon-park/vue-next'
+import type { DataTableColumn, DataTableRowKey } from 'naive-ui'
+import { Plus, DeleteFive, Refresh, Right } from '@icon-park/vue-next'
+import { useTabStore } from '@/stores/tab'
 
+const tab = useTabStore()
 const message = useMessage()
 const pagination = usePagination(20)
 
+const expr = ref<string | undefined>(undefined)
+const searchInput = ref('')
+
 const { loading, fetch: loadCategories, response } = useFetch(
-  () => apiv1.getCategories({ page: pagination.page.value, limit: pagination.pageSize.value }),
+  () => apiv1.getCategories({ page: pagination.page.value, limit: pagination.pageSize.value, expr: expr.value }),
 )
 
 async function fetchData() {
@@ -29,7 +34,29 @@ fetchData()
 
 const categoryList = computed(() => response.value?.data ?? [])
 
-// ── 更新字段 ──
+const checkedRowIds = ref<number[]>([])
+
+function updateChecked(keys: DataTableRowKey[]) {
+  checkedRowIds.value = keys as number[]
+}
+
+const allIds = computed(() => categoryList.value.map(v => v.id))
+
+async function handlePatchDelete() {
+  if (checkedRowIds.value.length === 0) {
+    message.warning('请选择要删除的分类')
+    return
+  }
+
+  const { fetch: doDelete } = useFetch(
+    () => apiv1.deleteCategories(checkedRowIds.value),
+  )
+  await doDelete()
+  message.success(`已删除 ${checkedRowIds.value.length} 个分类`)
+  checkedRowIds.value = []
+  await fetchData()
+}
+
 async function handleUpdate(id: number, field: 'categoryName' | 'description', value: string) {
   const { fetch: doUpdate } = useFetch(
     () => apiv1.updateCategory(String(id), { [field]: value || undefined }),
@@ -39,7 +66,6 @@ async function handleUpdate(id: number, field: 'categoryName' | 'description', v
   await fetchData()
 }
 
-// ── 删除 ──
 async function handleDelete(id: number) {
   const { fetch: doDelete } = useFetch(
     () => apiv1.deleteCategories([id]),
@@ -49,7 +75,6 @@ async function handleDelete(id: number) {
   await fetchData()
 }
 
-// ── 创建 ──
 const showCreateModal = ref(false)
 const createForm = ref({ categoryName: '', description: '' })
 const creating = ref(false)
@@ -76,13 +101,33 @@ async function handleCreate() {
   }
 }
 
-// ── 表格列 ──
+function handleSearch() {
+  expr.value = searchInput.value || undefined
+  pagination.setPage(1)
+  fetchData()
+}
+
+function handleRefresh() {
+  fetchData()
+}
+
+function viewCategoryArticles(id: number, categoryName: string) {
+  tab.openTab(`/content/articles/categories/${id}`, {
+    position: 'currentNext',
+    label: `@${id} [${categoryName}] 文章列表`,
+  })
+}
+
 const columns: DataTableColumn<Category>[] = [
+  {
+    type: 'selection',
+    width: 40,
+  },
   {
     title: 'ID',
     key: 'id',
     width: 80,
-    render: (row) => h('span', { class: 'mono text-xs text-tertiary' }, `#${row.id}`),
+    render: (row) => h('span', { class: 'mono text-xs text-tertiary' }, `@${row.id}`),
   },
   {
     title: '分类名称',
@@ -106,19 +151,27 @@ const columns: DataTableColumn<Category>[] = [
   {
     title: '操作',
     key: 'actions',
-    width: 100,
-    render: (row) => h(
-      NPopconfirm,
-      { onPositiveClick: () => handleDelete(row.id) },
-      {
-        trigger: () => h(
-          NButton,
-          { size: 'small', quaternary: true, circle: true },
-          { icon: () => h(Delete) },
-        ),
-        default: () => `确定删除分类「${row.categoryName}」？`,
-      },
-    ),
+    width: 130,
+    render: (row) => h('div', { style: 'display: inline-flex; gap: 4px; align-items: center;' }, [
+      h(NButton, {
+        size: 'tiny',
+        secondary: true,
+        title: '查看文章列表',
+        onClick: () => viewCategoryArticles(row.id, row.categoryName),
+      }, { icon: () => h(Right) }),
+      h(
+        NPopconfirm,
+        { onPositiveClick: () => handleDelete(row.id) },
+        {
+          trigger: () => h(
+            NButton,
+            { size: 'tiny', type: 'error', secondary: true },
+            { icon: () => h(DeleteFive) },
+          ),
+          default: () => `确定删除分类「${row.categoryName}」？`,
+        },
+      ),
+    ]),
   },
 ]
 </script>
@@ -131,16 +184,64 @@ const columns: DataTableColumn<Category>[] = [
           <h1 class="page-title">文章分类管理</h1>
           <p class="page-desc">共 {{ pagination.total.value }} 个分类</p>
         </div>
-        <NButton type="primary" @click="showCreateModal = true">
-          <template #icon>
-            <Plus />
-          </template>
-          新建分类
-        </NButton>
+        <NSpace>
+          <NButton @click="handleRefresh">
+            <template #icon>
+              <Refresh />
+            </template>
+          </NButton>
+          <NButton type="primary" @click="showCreateModal = true">
+            <template #icon>
+              <Plus />
+            </template>
+            新建分类
+          </NButton>
+        </NSpace>
       </div>
 
-      <NDataTable :columns="columns" :data="categoryList" :loading="loading" :row-key="(row: Category) => row.id"
-        :bordered="true" single-line />
+      <div class="toolbar">
+        <NFlex align="center" :wrap="false">
+          <NCheckbox
+            :checked="checkedRowIds.length === categoryList.length && categoryList.length > 0"
+            :indeterminate="checkedRowIds.length > 0 && checkedRowIds.length < categoryList.length"
+            @update:checked="v => checkedRowIds = v ? [...allIds] : []"
+          />
+          <NPopconfirm
+            v-if="checkedRowIds.length > 0"
+            @positive-click="handlePatchDelete"
+          >
+            <template #trigger>
+              <NButton size="small" secondary type="error">
+                <template #icon>
+                  <DeleteFive />
+                </template>
+                删除选中 ({{ checkedRowIds.length }})
+              </NButton>
+            </template>
+            确定删除选中的 {{ checkedRowIds.length }} 个分类？
+          </NPopconfirm>
+
+          <NInputGroup size="small" style="flex: 1; max-width: 100%;">
+            <NInput size="small" v-model:value="searchInput" clearable placeholder="过滤表达式，如 id=1 或 categoryName='技术'" @keyup.enter="handleSearch" />
+            <NButton type="primary" secondary size="small" @click="handleSearch">应用</NButton>
+          </NInputGroup>
+        </NFlex>
+      </div>
+
+      <NDataTable
+        :columns="columns"
+        :data="categoryList"
+        :loading="loading"
+        :row-key="(row: Category) => row.id"
+        :checked-row-keys="checkedRowIds"
+        @update:checked-row-keys="updateChecked"
+        :bordered="true"
+        single-line
+      >
+        <template #empty>
+          <NEmpty description="暂无分类数据" />
+        </template>
+      </NDataTable>
 
       <div v-if="pagination.total.value > pagination.pageSize.value" class="pagination-wrap">
         <NPagination :page="pagination.page.value" :page-size="pagination.pageSize.value"
@@ -148,7 +249,6 @@ const columns: DataTableColumn<Category>[] = [
       </div>
     </NCard>
 
-    <!-- 创建弹窗 -->
     <NModal v-model:show="showCreateModal" title="新建分类" :mask-closable="false" preset="card" style="max-width: 460px;"
       :bordered="false">
       <NForm>
@@ -217,5 +317,9 @@ const columns: DataTableColumn<Category>[] = [
   padding-top: 16px;
   border-top: 1px solid var(--color-border);
   margin-top: 12px;
+}
+
+.toolbar {
+  margin-bottom: 12px;
 }
 </style>

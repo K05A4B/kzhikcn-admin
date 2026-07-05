@@ -4,6 +4,12 @@ import { useRoute, useRouter } from "vue-router";
 
 export type CloseCallback = (close: () => void) => void
 
+export interface OpenTabOptions {
+  position?: number | 'currentNext' | 'currentPrev'
+  closable?: boolean
+  label?: string
+}
+
 export const useTabStore = defineStore("globalTabs", () => {
   interface TabOption {
     key: string
@@ -51,10 +57,10 @@ export const useTabStore = defineStore("globalTabs", () => {
   };
 
   // 切换 Tab
-  const openTab = (key: string) => {
+  const openTab = (key: string, options?: OpenTabOptions) => {
     const routers = router.getRoutes()
     if (!tabs.value.find((tab) => tab.key === key)) {
-      const nextRoute = routers.find(v => 
+      const nextRoute = routers.find(v =>
         router.resolve(key).matched.some(m => m.path === v.path)
       );
 
@@ -63,12 +69,33 @@ export const useTabStore = defineStore("globalTabs", () => {
         return
       }
 
-      const option: TabOption = {
+      console.log(options?.label)
+      const tabOption: TabOption = {
         key: key,
-        label: nextRoute.meta.title as string,
+        label: options?.label || nextRoute.meta.title as string,
+        closable: options?.closable || true,
       }
 
-      tabs.value.push(option);
+      const position = options?.position
+
+      if (position === undefined) {
+        tabs.value.push(tabOption);
+      }
+
+      if (typeof position === 'number') {
+        tabs.value.splice(position, 0, tabOption);
+      }
+
+      if (typeof position === 'string') {
+        const currIndex = tabs.value.findIndex((tab) => tab.key === active.value);
+        if (position === 'currentNext') {
+          tabs.value.splice(currIndex + 1, 0, tabOption);
+        }
+
+        if (position === 'currentPrev') {
+          tabs.value.splice(currIndex, 0, tabOption);
+        }
+      }
     }
 
     active.value = key

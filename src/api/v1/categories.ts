@@ -1,5 +1,6 @@
 import { httpClient } from '@/api/interceptors'
 import type { Resp } from '../response'
+import type { Article, ArticleGeneralQuery } from '@/api/v1/articles'
 
 export interface Category {
   id: number
@@ -15,6 +16,14 @@ export interface CategoryGeneralQuery {
 
 export function getCategories(query?: CategoryGeneralQuery): Resp<Category[]> {
   return httpClient.get('/v1/categories', { params: query })
+}
+
+export interface CategoryWithArticles extends Category {
+  articles: Article[]
+}
+
+export function getCategoryArticles(category: string, query?: ArticleGeneralQuery): Resp<CategoryWithArticles> {
+  return httpClient.get(`/v1/categories/${category}/articles`, { params: query })
 }
 
 export interface EditableCategory {

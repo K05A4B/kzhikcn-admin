@@ -43,19 +43,21 @@ const router = createRouter({
           component: () => import("@/views/tags/TagsManager.vue"),
           meta: { title: "文章标签管理", tabIcon: TagOne }
         },
-        // {
-        //   path: "/content/articles/tags/:tagId(\\d+)",
-        //   component: () => import("@/views/content/tags/showTagWithArticle.vue"),
-        // },
+        {
+          path: "/content/articles/tags/:tagId(\\d+)",
+          component: () => import("@/views/tags/TagWithArticles.vue"),
+          meta: { hidden: true, title: "标签文章列表", tabIcon: TagOne },
+        },
         {
           path: "/content/articles/categories",
           component: () => import("@/views/categories/CategoriesManager.vue"),
           meta: { title: "文章分类管理", tabIcon: CategoryManagement }
         },
-        // {
-        //   path: "/content/articles/categories/:categoryId(\\d+)",
-        //   component: () => import("@/views/content/categories/CategoryWithArticles.vue")
-        // },
+        {
+          path: "/content/articles/categories/:categoryId(\\d+)",
+          component: () => import("@/views/categories/CategoryWithArticles.vue"),
+          meta: { hidden: true, title: "分类文章列表", tabIcon: CategoryManagement },
+        },
         // {
         //   path: "/content/articles/editor",
         //   component: () => import("@/views/content/editor/index.vue"),
