@@ -1,11 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import NotFound from '@/views/NotFound.vue'
 import { Dashboard, User, Book, Info, Setting, CategoryManagement, Agreement, TagOne } from "@icon-park/vue-next"
 import { useLoadingBar } from "@/composable/use_naiveui_discrete_api"
 import { usePanelStore } from '@/stores/panel'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
   routes: [
     {
       path: "/",
