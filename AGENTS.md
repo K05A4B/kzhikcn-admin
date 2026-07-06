@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## 项目概述
 
 kzhikcn-admin 是一个 Vue 3 博客/CMS 管理面板前端，配合后端 API 服务 `kzhikcn-api` 使用。包含文章管理（CRUD、回收站）、分类管理、标签管理、用户设置、仪表盘等功能。
