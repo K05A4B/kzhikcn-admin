@@ -7,7 +7,7 @@ import {
 import { UploadOne } from '@icon-park/vue-next'
 import { useFetch, useMessage } from '@/composable'
 import { apiv1 } from '@/api'
-import { useAuthStore } from '@/stores/auth'
+import { usePanelStore } from '@/stores/panel'
 
 const props = defineProps<{
   show: boolean
@@ -19,7 +19,7 @@ const emit = defineEmits<{
 }>()
 
 const message = useMessage()
-const authStore = useAuthStore()
+const panelStore = usePanelStore()
 
 // ── 资源列表 ──
 const {
@@ -97,7 +97,7 @@ async function handleDelete(name: string) {
 
 // ── 复制 URL ──
 function copyUrl(name: string) {
-  const baseUrl = authStore.baseUrl ?? window.location.origin
+  const baseUrl = panelStore.baseUrl ?? window.location.origin
   const url = `${baseUrl.replace(/\/+$/, '')}/v1/articles/${props.articleId}/assets/${name}`
   navigator.clipboard.writeText(url).then(() => {
     message.success('已复制链接')

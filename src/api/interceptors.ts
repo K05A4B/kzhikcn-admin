@@ -1,20 +1,21 @@
 import axios from "axios";
 import { type HttpResponse } from "./response";
 import { useAuthStore } from "@/stores/auth";
+import { usePanelStore } from "@/stores/panel";
 
 export const httpClient = axios.create({
 });
 
 httpClient.interceptors.request.use(
-  
   (config) => {
+    const panelStore = usePanelStore();
     const authStore = useAuthStore();
 
-    if (!authStore.baseUrl) {
+    if (!panelStore.baseUrl) {
       return config;
     }
 
-    config.baseURL = authStore.baseUrl;
+    config.baseURL = panelStore.baseUrl;
     if (authStore.isAuthorized)  {
       config.headers["Authorization"] = `Bearer ${authStore.token}`
     }

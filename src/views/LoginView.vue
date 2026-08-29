@@ -6,8 +6,11 @@ import { useFetch } from '@/composable';
 import { apiv1 } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 import { useMessage } from '@/composable/use_naiveui_discrete_api';
+import { usePanelStore } from '@/stores/panel';
+
 
 const authStore = useAuthStore()
+const panelStore = usePanelStore()
 const message = useMessage()
 
 type LoginStep = 'credentials' | 'mfa'
@@ -22,7 +25,7 @@ const loginModel = reactive({
   password: '',
 })
 
-const showAdvanced = ref(false)
+const showAdvanced = ref(!panelStore.baseUrl)
 
 const { fetch: login } = useFetch(() => {
   return apiv1.login(loginModel.username, loginModel.password)
@@ -139,13 +142,13 @@ const cardSubtitle = computed(() => step.value === 'mfa'
 
             <div v-if="showAdvanced" class="advanced-section">
               <NFormItem label="API BaseURL">
-                <NInput v-model:value="authStore.baseUrl" placeholder="http://localhost:5083" />
+                <NInput v-model:value="panelStore.baseUrl" placeholder="http://localhost:5083" />
               </NFormItem>
               <div class="connection-status">
-                <span v-if="authStore.baseUrl" class="status-dot" :class="authStore.baseUrlConnected ? 'connected' : 'disconnected'" />
-                <span v-if="authStore.baseUrl" class="status-text">{{ authStore.baseUrlConnected ? '已连接' : '未连接' }}</span>
+                <span v-if="panelStore.baseUrl" class="status-dot" :class="panelStore.baseUrlConnected ? 'connected' : 'disconnected'" />
+                <span v-if="panelStore.baseUrl" class="status-text">{{ panelStore.baseUrlConnected ? '已连接' : '未连接' }}</span>
                 <span v-else class="status-text">未配置</span>
-                <NButton text size="tiny" @click="authStore.testConnection">测试连接</NButton>
+                <NButton text size="tiny" @click="panelStore.testConnection">测试连接</NButton>
               </div>
             </div>
           </div>

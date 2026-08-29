@@ -3,7 +3,6 @@ import { computed, ref, watch, onMounted, onUnmounted, useTemplateRef } from 'vu
 import { useRoute } from 'vue-router'
 import { useArticleEditor } from '@/composable'
 import { usePanelStore } from '@/stores/panel'
-import { useAuthStore } from '@/stores/auth'
 import { useFetch, useMessage } from '@/composable'
 import ArticleCard from '@/components/articles/ArticleCard.vue'
 import ArticleAssetManager from '@/components/articles/ArticleAssetManager.vue'
@@ -148,7 +147,6 @@ function handleCardUpdate(_id: string, options: EditableArticle) {
 }
 
 const editorTheme = computed(() => panelStore.themeMode === 'dark' ? 'dark' : 'light')
-const authStore = useAuthStore()
 
 // ── 插入图片 ──
 async function handleUploadImg(files: File[], callback: (urls: string[]) => void) {
@@ -162,7 +160,7 @@ async function handleUploadImg(files: File[], callback: (urls: string[]) => void
       await doUpload()
       const filename = uploadData.value
       if (filename) {
-        const baseUrl = authStore.baseUrl ?? window.location.origin
+        const baseUrl = panelStore.baseUrl ?? window.location.origin
         urls.push(`${baseUrl.replace(/\/+$/, '')}/v1/articles/${articleId}/assets/${filename}`)
       }
     }

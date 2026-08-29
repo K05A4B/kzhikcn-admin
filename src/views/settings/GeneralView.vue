@@ -1,21 +1,37 @@
 <script setup lang="ts">
-import { NCard, NSpace, NTag, NInput, NButton } from 'naive-ui'
-import { useAuthStore } from '@/stores/auth'
+import { NCard, NSpace, NTag, NInput, NButton, NText } from 'naive-ui'
 import { useUserStore } from '@/stores/user'
+import { usePanelStore } from '@/stores/panel'
 import { useMessage } from '@/composable/use_naiveui_discrete_api'
 import { Check, Close, Reload } from '@icon-park/vue-next'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
-const authStore = useAuthStore()
 const userStore = useUserStore()
+const panelStore = usePanelStore()
 const message = useMessage()
+
+const latencyType = computed(() => {
+  if (!panelStore.latency) {
+    return 'none'
+  }
+
+  if (panelStore.latency <= 300) {
+    return 'success'
+  }
+
+  if (panelStore.latency <= 1000) {
+    return 'warning'
+  }
+
+  return 'error'
+})
 
 const editing = ref(false)
 const editValue = ref('')
 const testing = ref(false)
 
 function startEdit() {
-  editValue.value = authStore.baseUrl || ''
+  editValue.value = panelStore.baseUrl || ''
   editing.value = true
 }
 
@@ -25,7 +41,7 @@ function saveUrl() {
     message.warning('Base URL 需以 http:// 或 https:// 开头')
     return
   }
-  authStore.baseUrl = url || null
+  panelStore.baseUrl = url || null
   editing.value = false
   message.success('Base URL 已更新')
 }
@@ -60,7 +76,7 @@ function cancelEdit() {
               <NButton size="tiny" @click="cancelEdit">取消</NButton>
             </template>
             <template v-else>
-              <code class="mono">{{ authStore.baseUrl || '未配置' }}</code>
+              <code class="mono">{{ panelStore.baseUrl || '未配置' }}</code>
               <NButton text size="tiny" style="margin-left: 8px;" @click="startEdit">修改</NButton>
             </template>
           </div>
@@ -68,13 +84,13 @@ function cancelEdit() {
         <div class="setting-row">
           <span class="setting-label">连接状态</span>
           <div class="setting-value-row">
-            <NTag :type="authStore.baseUrlConnected ? 'success' : 'error'" size="small">
+            <NTag :type="panelStore.baseUrlConnected ? 'success' : 'error'" size="small">
               <template #icon>
-                <component :is="authStore.baseUrlConnected ? Check : Close" />
+                <component :is="panelStore.baseUrlConnected ? Check : Close" />
               </template>
-              {{ authStore.baseUrlConnected ? '已连接' : '未连接' }}
+              {{ panelStore.baseUrlConnected ? '已连接' : '未连接' }}
             </NTag>
-            <NButton text size="tiny" style="margin-left: 8px;" :loading="testing" @click="authStore.testConnection">
+            <NButton text size="tiny" style="margin-left: 8px;" :loading="testing" @click="panelStore.testConnection">
               <template #icon><Reload /></template>
               测试连接
             </NButton>
@@ -97,8 +113,23 @@ function cancelEdit() {
           <span class="setting-value">Vite 8</span>
         </div>
         <div class="setting-row">
+          <span class="setting-label">延迟</span>
+          <span class="setting-value">
+            <NText :type="latencyType" v-if="panelStore.baseUrlConnected">
+              {{ panelStore.latency || '—' }} ms
+            </NText>
+            <NText type="error" v-else>
+              异常
+            </NText>
+          </span>
+        </div>
+        <div class="setting-row">
           <span class="setting-label">后端版本</span>
-          <span class="setting-value">kzhikcn-api (Go)</span>
+          <span class="setting-value">{{ panelStore.pingResult?.serverVersion || '—' }}</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">您的IP地址</span>
+          <span class="setting-value">{{ panelStore.pingResult?.ip || '—' }}</span>
         </div>
       </NCard>
     </NSpace>

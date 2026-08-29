@@ -4,6 +4,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import * as dotenv from "dotenv"
+
+dotenv.config()
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -21,7 +24,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: "http://localhost:5083",
+        target: process.env.VITE_BACKEND_API_URL || "http://localhost:5083",
         changeOrigin: true,
       },
     }
